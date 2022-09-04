@@ -64,12 +64,10 @@ static struct Config g_config = {
 	.output_level = MicrologOutputLevelNormal,
 };
 
-void ulog_init(enum MicrologOutputLevel output_level)
+static void ulog_init()
 {
 	if (g_config.is_initialized)
 		return;
-
-	g_config.output_level = output_level;
 
 	const char* terminal = getenv("TERM");
 	if (!terminal) {
@@ -81,6 +79,11 @@ void ulog_init(enum MicrologOutputLevel output_level)
 
 	g_config.has_smart_output = isatty(1) && strcmp(terminal, "dumb") != 0;
 	g_config.is_initialized = true;
+}
+
+void ulog_set_output_level(enum MicrologOutputLevel output_level)
+{
+	g_config.output_level = output_level;
 }
 
 static void set_color(FILE* stream, enum MessageType message_type)
@@ -113,6 +116,9 @@ static void reset_color(FILE* stream)
 
 static void log_internal(enum MessageType message_type, const char* format, va_list args)
 {
+	if (!g_config.is_initialized)
+		ulog_init();
+
 	FILE* stream = message_type == MessageTypeError ? stderr : stdout;
 
 	set_color(stream, message_type);

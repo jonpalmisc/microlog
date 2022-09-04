@@ -43,8 +43,8 @@ enum MicrologOutputLevel {
 	MicrologOutputLevelTrace
 };
 
-/// Initialize the logging system.
-void ulog_init(enum MicrologOutputLevel);
+/// Set the log output level.
+void ulog_set_output_level(enum MicrologOutputLevel);
 
 /// Log a formatted message to the standard output stream.
 void ulog_info(const char* format, ...);
