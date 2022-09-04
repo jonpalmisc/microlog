@@ -1,4 +1,4 @@
-//===-- MiniLog.h - Tiny C logging library --------------------------------===//
+//===-- microlog.h - Small logging library for C --------------------------===//
 //
 // Copyright (c) 2022 Jon Palmisciano
 //
