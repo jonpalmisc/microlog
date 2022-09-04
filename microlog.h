@@ -37,23 +37,28 @@ extern "C" {
 #endif
 
 /// Log output level options.
-enum LogOutputLevel {
-	LogOutputLevelNormal,
-	LogOutputLevelDebug
+enum MicrologOutputLevel {
+	MicrologOutputLevelNormal,
+	MicrologOutputLevelDebug,
+	MicrologOutputLevelTrace
 };
 
 /// Initialize the logging system.
-void log_init(enum LogOutputLevel);
+void ulog_init(enum MicrologOutputLevel);
 
 /// Log a formatted message to the standard output stream.
-void log_info(const char* format, ...);
+void ulog_info(const char* format, ...);
 
 /// Log a formatted message to the standard output stream, only if debug output
 /// is enabled.
-void log_debug(const char* format, ...);
+void ulog_debug(const char* format, ...);
+
+/// Log a formatted message to the standard output stream, only if debug output
+/// is enabled.
+void ulog_trace(const char* format, ...);
 
 /// Log a formatted message to the standard error stream.
-void log_error(const char* format, ...);
+void ulog_error(const char* format, ...);
 
 #ifdef __cplusplus
 }

@@ -34,42 +34,42 @@
 
 #include <stdarg.h>
 #include <stdbool.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <unistd.h>
 
-#define ANSI_CLEAR_EOL   "\x1B[K"
-#define ANSI_COLOR_RED   "\x1b[31m"
-#define ANSI_COLOR_BLUE  "\x1b[34m"
+#define ANSI_COLOR_ERROR "\x1b[31m" /* Red */
+#define ANSI_COLOR_DEBUG "\x1b[33m" /* Yellow */
+#define ANSI_COLOR_TRACE "\x1b[34m" /* Blue */
 #define ANSI_COLOR_RESET "\x1b[0m"
 
 enum MessageType {
 	MessageTypeNormal,
 	MessageTypeDebug,
+	MessageTypeTrace,
 	MessageTypeError,
 };
 
 struct Config {
 	bool is_initialized;
 	bool has_smart_output;
-	bool show_debug_output;
+	enum MicrologOutputLevel output_level;
 };
 
 static struct Config g_config = {
 	.is_initialized = false,
 	.has_smart_output = false,
-	.show_debug_output = false
+	.output_level = MicrologOutputLevelNormal,
 };
 
-void log_init(enum LogOutputLevel output_level)
+void ulog_init(enum MicrologOutputLevel output_level)
 {
 	if (g_config.is_initialized)
 		return;
 
-	if (output_level == LogOutputLevelDebug)
-		g_config.show_debug_output = true;
+	g_config.output_level = output_level;
 
 	const char* terminal = getenv("TERM");
 	if (!terminal) {
@@ -90,10 +90,13 @@ static void set_color(FILE* stream, enum MessageType message_type)
 
 	switch (message_type) {
 	case MessageTypeDebug:
-		fprintf(stream, ANSI_COLOR_BLUE);
+		fprintf(stream, ANSI_COLOR_DEBUG);
+		break;
+	case MessageTypeTrace:
+		fprintf(stream, ANSI_COLOR_TRACE);
 		break;
 	case MessageTypeError:
-		fprintf(stream, ANSI_COLOR_RED);
+		fprintf(stream, ANSI_COLOR_ERROR);
 		break;
 	default:
 		break;
@@ -119,7 +122,7 @@ static void log_internal(enum MessageType message_type, const char* format, va_l
 	fprintf(stream, "\n");
 }
 
-void log_info(const char* format, ...)
+void ulog_info(const char* format, ...)
 {
 	va_list args;
 	va_start(args, format);
@@ -129,9 +132,9 @@ void log_info(const char* format, ...)
 	va_end(args);
 }
 
-void log_debug(const char* format, ...)
+void ulog_debug(const char* format, ...)
 {
-	if (!g_config.show_debug_output)
+	if (g_config.output_level < MicrologOutputLevelDebug)
 		return;
 
 	va_list args;
@@ -142,7 +145,20 @@ void log_debug(const char* format, ...)
 	va_end(args);
 }
 
-void log_error(const char* format, ...)
+void ulog_trace(const char* format, ...)
+{
+	if (g_config.output_level < MicrologOutputLevelTrace)
+		return;
+
+	va_list args;
+	va_start(args, format);
+
+	log_internal(MessageTypeTrace, format, args);
+
+	va_end(args);
+}
+
+void ulog_error(const char* format, ...)
 {
 	va_list args;
 	va_start(args, format);
