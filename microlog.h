@@ -36,6 +36,8 @@
 extern "C" {
 #endif
 
+#define ULOG_FORMAT __attribute__((format(printf, 1, 2)))
+
 /// Log output level options.
 enum MicrologOutputLevel {
 	MicrologOutputLevelNormal,
@@ -47,18 +49,18 @@ enum MicrologOutputLevel {
 void ulog_set_output_level(enum MicrologOutputLevel);
 
 /// Log a formatted message to the standard output stream.
-void ulog_info(const char* format, ...);
+ULOG_FORMAT void ulog_info(const char* format, ...);
 
 /// Log a formatted message to the standard output stream, only if debug output
 /// is enabled.
-void ulog_debug(const char* format, ...);
+ULOG_FORMAT void ulog_debug(const char* format, ...);
 
 /// Log a formatted message to the standard output stream, only if debug output
 /// is enabled.
-void ulog_trace(const char* format, ...);
+ULOG_FORMAT void ulog_trace(const char* format, ...);
 
 /// Log a formatted message to the standard error stream.
-void ulog_error(const char* format, ...);
+ULOG_FORMAT void ulog_error(const char* format, ...);
 
 #ifdef __cplusplus
 }
