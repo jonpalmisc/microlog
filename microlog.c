@@ -53,42 +53,38 @@ enum MessageType {
 };
 
 struct Config {
-	bool is_initialized;
-	bool has_smart_output;
 	enum MicrologOutputLevel output_level;
+	unsigned char features;
 };
 
 static struct Config g_config = {
-	.is_initialized = false,
-	.has_smart_output = false,
+	.features = MicrologFeatureColor,
 	.output_level = MicrologOutputLevelNormal,
 };
-
-static void ulog_init()
-{
-	if (g_config.is_initialized)
-		return;
-
-	const char* terminal = getenv("TERM");
-	if (!terminal) {
-		g_config.has_smart_output = false;
-		g_config.is_initialized = true;
-
-		return;
-	}
-
-	g_config.has_smart_output = isatty(1) && strcmp(terminal, "dumb") != 0;
-	g_config.is_initialized = true;
-}
 
 void ulog_set_output_level(enum MicrologOutputLevel output_level)
 {
 	g_config.output_level = output_level;
 }
 
+void ulog_enable_feature(enum MicrologFeature feature)
+{
+	g_config.features |= feature;
+}
+
+void ulog_disable_feature(enum MicrologFeature feature)
+{
+	g_config.features &= ~feature;
+}
+
+int ulog_has_feature(enum MicrologFeature feature)
+{
+	return g_config.features & feature;
+}
+
 static void set_color(FILE* stream, enum MessageType message_type)
 {
-	if (!g_config.has_smart_output)
+	if (!ulog_has_feature(MicrologFeatureColor))
 		return;
 
 	switch (message_type) {
@@ -108,7 +104,7 @@ static void set_color(FILE* stream, enum MessageType message_type)
 
 static void reset_color(FILE* stream)
 {
-	if (!g_config.has_smart_output)
+	if (!ulog_has_feature(MicrologFeatureColor))
 		return;
 
 	fprintf(stream, ANSI_COLOR_RESET);
@@ -116,9 +112,6 @@ static void reset_color(FILE* stream)
 
 static void log_internal(enum MessageType message_type, const char* format, va_list args)
 {
-	if (!g_config.is_initialized)
-		ulog_init();
-
 	FILE* stream = message_type == MessageTypeError ? stderr : stdout;
 
 	set_color(stream, message_type);

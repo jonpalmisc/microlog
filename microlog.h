@@ -45,8 +45,22 @@ enum MicrologOutputLevel {
 	MicrologOutputLevelTrace
 };
 
+/// Output options/feature flags.
+enum MicrologFeature : unsigned char {
+	MicrologFeatureColor = 1 << 0,
+};
+
 /// Set the log output level.
 void ulog_set_output_level(enum MicrologOutputLevel);
+
+/// Enable an output feature.
+void ulog_enable_feature(enum MicrologFeature);
+
+/// Disable an output feature.
+void ulog_disable_feature(enum MicrologFeature);
+
+/// Check if an output feature is enabled.
+int ulog_has_feature(enum MicrologFeature);
 
 /// Log a formatted message to the standard output stream.
 ULOG_FORMAT void ulog_info(const char* format, ...);
