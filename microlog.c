@@ -45,13 +45,6 @@
 #define ANSI_COLOR_TRACE "\x1b[34m" /* Blue */
 #define ANSI_COLOR_RESET "\x1b[0m"
 
-enum MessageType {
-	MessageTypeNormal,
-	MessageTypeDebug,
-	MessageTypeTrace,
-	MessageTypeError,
-};
-
 struct Config {
 	enum MicrologOutputLevel output_level;
 	unsigned char features;
@@ -59,7 +52,7 @@ struct Config {
 
 static struct Config g_config = {
 	.features = MicrologFeatureColor,
-	.output_level = MicrologOutputLevelNormal,
+	.output_level = MicrologOutputLevelInfo,
 };
 
 //===----------------------------------------------------------------------===//
@@ -91,20 +84,20 @@ int ulog_has_feature(enum MicrologFeature feature)
 
 //===----------------------------------------------------------------------===//
 
-static void set_color(FILE* stream, enum MessageType message_type)
+static void set_color(FILE* stream, enum MicrologOutputLevel level)
 {
 	if (!ulog_has_feature(MicrologFeatureColor))
 		return;
 
-	switch (message_type) {
-	case MessageTypeDebug:
+	switch (level) {
+	case MicrologOutputLevelError:
+		fprintf(stream, ANSI_COLOR_ERROR);
+		break;
+	case MicrologOutputLevelDebug:
 		fprintf(stream, ANSI_COLOR_DEBUG);
 		break;
-	case MessageTypeTrace:
+	case MicrologOutputLevelTrace:
 		fprintf(stream, ANSI_COLOR_TRACE);
-		break;
-	case MessageTypeError:
-		fprintf(stream, ANSI_COLOR_ERROR);
 		break;
 	default:
 		break;
@@ -121,59 +114,41 @@ static void reset_color(FILE* stream)
 
 //===----------------------------------------------------------------------===//
 
-static void log_internal(enum MessageType message_type, const char* format, va_list args)
+static void log_internal(enum MicrologOutputLevel level, const char* format, va_list args)
 {
-	FILE* stream = message_type == MessageTypeError ? stderr : stdout;
+	FILE* stream = level == MicrologOutputLevelError ? stderr : stdout;
 
-	set_color(stream, message_type);
+	set_color(stream, level);
 	vfprintf(stream, format, args);
 	reset_color(stream);
 
 	fprintf(stream, "\n");
 }
 
+#define ULOG_LOG_FUNCTION_BODY(level)      \
+	va_list args;                      \
+	if (level > g_config.output_level) \
+		return;                    \
+	va_start(args, format);            \
+	log_internal(level, format, args); \
+	va_end(args);
+
 void ulog_info(const char* format, ...)
 {
-	va_list args;
-	va_start(args, format);
-
-	log_internal(MessageTypeNormal, format, args);
-
-	va_end(args);
+	ULOG_LOG_FUNCTION_BODY(MicrologOutputLevelInfo);
 }
 
 void ulog_debug(const char* format, ...)
 {
-	if (g_config.output_level < MicrologOutputLevelDebug)
-		return;
-
-	va_list args;
-	va_start(args, format);
-
-	log_internal(MessageTypeDebug, format, args);
-
-	va_end(args);
+	ULOG_LOG_FUNCTION_BODY(MicrologOutputLevelDebug);
 }
 
 void ulog_trace(const char* format, ...)
 {
-	if (g_config.output_level < MicrologOutputLevelTrace)
-		return;
-
-	va_list args;
-	va_start(args, format);
-
-	log_internal(MessageTypeTrace, format, args);
-
-	va_end(args);
+	ULOG_LOG_FUNCTION_BODY(MicrologOutputLevelTrace);
 }
 
 void ulog_error(const char* format, ...)
 {
-	va_list args;
-	va_start(args, format);
-
-	log_internal(MessageTypeError, format, args);
-
-	va_end(args);
+	ULOG_LOG_FUNCTION_BODY(MicrologOutputLevelError);
 }

@@ -40,13 +40,25 @@ extern "C" {
 
 /// Log output level options.
 enum MicrologOutputLevel {
-	MicrologOutputLevelNormal,
-	MicrologOutputLevelDebug,
-	MicrologOutputLevelTrace
+	/// Do not show any log messages.
+	MicrologOutputLevelNone = 0,
+
+	/// Only show error messages.
+	MicrologOutputLevelError = 1,
+
+	/// Show info messages and error messages.
+	MicrologOutputLevelInfo = 2,
+
+	/// Show debug, info, and error messages.
+	MicrologOutputLevelDebug = 3,
+
+	/// Show trace, debug, info, and error messages.
+	MicrologOutputLevelTrace = 4
 };
 
 /// Output options/feature flags.
 enum MicrologFeature : unsigned char {
+	/// Enable color output.
 	MicrologFeatureColor = 1 << 0,
 };
 
