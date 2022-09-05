@@ -62,9 +62,16 @@ static struct Config g_config = {
 	.output_level = MicrologOutputLevelNormal,
 };
 
+//===----------------------------------------------------------------------===//
+
 void ulog_set_output_level(enum MicrologOutputLevel output_level)
 {
 	g_config.output_level = output_level;
+}
+
+enum MicrologOutputLevel ulog_output_level()
+{
+	return g_config.output_level;
 }
 
 void ulog_enable_feature(enum MicrologFeature feature)
@@ -81,6 +88,8 @@ int ulog_has_feature(enum MicrologFeature feature)
 {
 	return g_config.features & feature;
 }
+
+//===----------------------------------------------------------------------===//
 
 static void set_color(FILE* stream, enum MessageType message_type)
 {
@@ -109,6 +118,8 @@ static void reset_color(FILE* stream)
 
 	fprintf(stream, ANSI_COLOR_RESET);
 }
+
+//===----------------------------------------------------------------------===//
 
 static void log_internal(enum MessageType message_type, const char* format, va_list args)
 {

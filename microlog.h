@@ -53,6 +53,9 @@ enum MicrologFeature : unsigned char {
 /// Set the log output level.
 void ulog_set_output_level(enum MicrologOutputLevel);
 
+/// Get the log output level.
+enum MicrologOutputLevel ulog_output_level(void);
+
 /// Enable an output feature.
 void ulog_enable_feature(enum MicrologFeature);
 
@@ -62,15 +65,17 @@ void ulog_disable_feature(enum MicrologFeature);
 /// Check if an output feature is enabled.
 int ulog_has_feature(enum MicrologFeature);
 
-/// Log a formatted message to the standard output stream.
+//===----------------------------------------------------------------------===//
+
+/// Log a formatted info message to the standard output stream.
 ULOG_FORMAT void ulog_info(const char* format, ...);
 
-/// Log a formatted message to the standard output stream, only if debug output
-/// is enabled.
+/// Log a formatted debug message to the standard output stream. Does nothing if
+/// debug output is not enabled.
 ULOG_FORMAT void ulog_debug(const char* format, ...);
 
-/// Log a formatted message to the standard output stream, only if debug output
-/// is enabled.
+/// Log a formatted trace message to the standard output stream. Does nothing
+/// if trace output is not enabled.
 ULOG_FORMAT void ulog_trace(const char* format, ...);
 
 /// Log a formatted message to the standard error stream.
