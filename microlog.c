@@ -37,6 +37,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include <unistd.h>
 
@@ -54,6 +55,9 @@ static struct Config g_config = {
 	.features = MicrologFeatureColor,
 	.output_level = MicrologOutputLevelInfo,
 };
+
+bool g_epoch_initialized = false;
+struct timespec g_epoch;
 
 //===----------------------------------------------------------------------===//
 
@@ -114,11 +118,39 @@ static void reset_color(FILE* stream)
 
 //===----------------------------------------------------------------------===//
 
+static inline void time_subtract(struct timespec* lhs, struct timespec* rhs, struct timespec* out)
+{
+	out->tv_sec = lhs->tv_sec - rhs->tv_sec;
+	out->tv_nsec = lhs->tv_nsec - rhs->tv_nsec;
+
+	if (out->tv_nsec < 0) {
+		--out->tv_sec;
+		out->tv_nsec += 1000000000L;
+	}
+}
+
+static void log_internal_time(FILE* stream)
+{
+	struct timespec now, elapsed;
+
+	if (!g_epoch_initialized) {
+		clock_gettime(CLOCK_MONOTONIC, &g_epoch);
+		g_epoch_initialized = true;
+	}
+
+	clock_gettime(CLOCK_MONOTONIC, &now);
+	time_subtract(&now, &g_epoch, &elapsed);
+
+	fprintf(stream, "%03lu.%06lu | ", elapsed.tv_sec, elapsed.tv_nsec / 1000);
+}
+
 static void log_internal(enum MicrologOutputLevel level, const char* format, va_list args)
 {
 	FILE* stream = level == MicrologOutputLevelError ? stderr : stdout;
 
 	set_color(stream, level);
+	if (ulog_has_feature(MicrologFeatureTime))
+		log_internal_time(stream);
 	vfprintf(stream, format, args);
 	reset_color(stream);
 

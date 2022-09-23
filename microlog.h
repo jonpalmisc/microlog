@@ -60,6 +60,9 @@ enum MicrologOutputLevel {
 enum MicrologFeature : unsigned char {
 	/// Enable color output.
 	MicrologFeatureColor = 1 << 0,
+
+	/// Enable timestamped output.
+	MicrologFeatureTime = 1 << 1,
 };
 
 /// Set the log output level.

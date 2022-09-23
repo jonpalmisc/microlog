@@ -7,6 +7,7 @@ int main()
 	assert(ulog_output_level() == MicrologOutputLevelInfo);
 
 	ulog_set_output_level(MicrologOutputLevelTrace);
+	ulog_enable_feature(MicrologFeatureTime);
 
 	// Four messages in different colors should be printed.
 	ulog_info("This is an info-level message, used for general communication");
